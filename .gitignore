@@ -1,0 +1,10 @@
+# зависимости и сборка
+node_modules/
+.next/
+out/
+
+# среда
+.env
+.env.*
+*.log
+.DS_Store
