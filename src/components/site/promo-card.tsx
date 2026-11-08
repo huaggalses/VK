@@ -6,7 +6,8 @@ import type { Promo } from "@/lib/types";
  * Промо-слот — первый платный продукт.
  * Градиентная рамка выделяет карточку, бейдж «Реклама» и ЕРИД — по закону.
  */
-export function PromoCard({ promo }: { promo: Promo }) {
+export function PromoCard({ promo }: { promo: Promo | null }) {
+  if (!promo) return null; // блок снят (promo.json = null) — просто не рисуем
   return (
     <div className="fade-up rounded-2xl bg-gradient-to-br from-violet-600 via-fuchsia-500 to-orange-400 p-[1.5px] shadow-md shadow-fuchsia-500/10">
       <div className="rounded-[14.5px] bg-card p-4 sm:p-5">

@@ -7,6 +7,8 @@ import type { Post } from "@/lib/types";
 /**
  * Карточка поста: чистый HTML без клиентского JS.
  * Дата рендерится относительной, полный текст — без «показать ещё».
+ * Порядок как в ВК: сначала фотографии, под ними текст.
+ * Если у поста нет фото — остаётся просто текст; нет текста — просто фото.
  */
 export function PostCard({ post, groupName }: { post: Post; groupName: string }) {
   return (
@@ -37,12 +39,16 @@ export function PostCard({ post, groupName }: { post: Post; groupName: string })
         </div>
       </div>
 
-      <p className="whitespace-pre-line px-4 pb-3 text-[15px] leading-relaxed">
-        {post.text}
-      </p>
+      <PhotoGrid photos={post.photos} postId={post.id} />
+
+      {post.text && (
+        <p className="whitespace-pre-line px-4 py-3 text-[15px] leading-relaxed">
+          {post.text}
+        </p>
+      )}
 
       {post.hashtags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 px-4 pb-3">
+        <div className="flex flex-wrap gap-1.5 px-4 pb-3.5">
           {post.hashtags.map((t) => (
             <span
               key={t}
@@ -53,8 +59,6 @@ export function PostCard({ post, groupName }: { post: Post; groupName: string })
           ))}
         </div>
       )}
-
-      <PhotoGrid photos={post.photos} postId={post.id} />
 
       {post.related.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 px-4 pb-3.5 text-xs text-muted-foreground">

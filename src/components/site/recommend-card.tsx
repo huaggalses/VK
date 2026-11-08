@@ -6,7 +6,8 @@ import type { Promo } from "@/lib/types";
  * «Рекомендуем» — второй платный слот, мягче промо-закрепа.
  * Помечен как реклама: честность важнее охвата.
  */
-export function RecommendCard({ rec }: { rec: Promo }) {
+export function RecommendCard({ rec }: { rec: Promo | null }) {
+  if (!rec) return null; // блок снят (recommend.json = null) — просто не рисуем
   return (
     <section className="fade-up overflow-hidden rounded-2xl border bg-card shadow-sm">
       <div className="flex items-center gap-2.5 p-4 pb-3">
