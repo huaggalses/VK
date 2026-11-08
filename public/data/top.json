@@ -1,0 +1,60 @@
+{
+  "period": "Неделя",
+  "items": [
+    {
+      "rank": 1,
+      "postId": 104,
+      "title": "ФОТО ДНЯ 🌇",
+      "image": "/img/posts/sunset.jpg",
+      "score": 954,
+      "likes": 742,
+      "reposts": 64,
+      "comments": 28,
+      "vkUrl": "https://vk.com/wall-0_104"
+    },
+    {
+      "rank": 2,
+      "postId": 108,
+      "title": "Набережную открыли после реконструкции 🚲",
+      "image": "/img/posts/embankment.jpg",
+      "score": 828,
+      "likes": 523,
+      "reposts": 76,
+      "comments": 51,
+      "vkUrl": "https://vk.com/wall-0_108"
+    },
+    {
+      "rank": 3,
+      "postId": 106,
+      "title": "В ЭТУ СУББОТУ: фестиваль уличной еды на Соборной площади 🍜",
+      "image": "/img/posts/foodfest.jpg",
+      "score": 815,
+      "likes": 456,
+      "reposts": 121,
+      "comments": 39,
+      "vkUrl": "https://vk.com/wall-0_106"
+    },
+    {
+      "rank": 4,
+      "postId": 114,
+      "title": "ОТКЛЮЧЕНИЕ ГОРЯЧЕЙ ВОДЫ: график по адресам",
+      "image": null,
+      "score": 779,
+      "likes": 98,
+      "reposts": 210,
+      "comments": 87,
+      "vkUrl": "https://vk.com/wall-0_114"
+    },
+    {
+      "rank": 5,
+      "postId": 105,
+      "title": "ОПРОС: какую детскую площадку обновить следующей?",
+      "image": null,
+      "score": 724,
+      "likes": 87,
+      "reposts": 14,
+      "comments": 203,
+      "vkUrl": "https://vk.com/wall-0_105"
+    }
+  ]
+}
