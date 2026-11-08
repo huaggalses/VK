@@ -85,7 +85,7 @@ const titleOf = (text) => {
 
 function normalizeWall(items) {
   return items
-    .filter((p) => !p.marked_as_ads && p.created_by !== undefined && p.from_id === p.owner_id)
+    .filter((p) => !p.marked_as_ads && typeof p.id === "number" && typeof p.from_id === "number")
     .map((p) => ({
       id: p.id,
       date: new Date(p.date * 1000).toISOString(),
