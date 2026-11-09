@@ -13,7 +13,7 @@ function VkIcon({ className }: { className?: string }) {
 export function Header({ group }: { group: Group }) {
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/70 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 w-full max-w-2xl items-center justify-between gap-3 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <a href="/" className="flex min-w-0 items-center gap-3">
           <LogoTile />
           <div className="min-w-0">
