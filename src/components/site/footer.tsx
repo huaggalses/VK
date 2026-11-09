@@ -20,7 +20,7 @@ export function Footer({ group }: { group: Group }) {
         </p>
         {/* Кнопка ведёт в сообщения сообщества VK */}
         <a
-          href="https://vk.me/online_tyumen72"
+          href="https://vk.ru/gim161610766"
           target="_blank"
           rel="noopener noreferrer"
           className="font-semibold text-foreground underline-offset-4 transition hover:underline"
