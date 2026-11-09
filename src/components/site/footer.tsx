@@ -18,9 +18,11 @@ export function Footer({ group }: { group: Group }) {
         <p className="hidden md:block">
           Обновление ленты — раз в 45 минут · статика для GitHub Pages
         </p>
-        {/* ЗАМЕНИТЕ e-mail на свой — адрес для рекламодателей */}
+        {/* Кнопка ведёт в сообщения сообщества VK */}
         <a
-          href="mailto:adv@nashgorod.ru"
+          href="https://vk.me/online_tyumen72"
+          target="_blank"
+          rel="noopener noreferrer"
           className="font-semibold text-foreground underline-offset-4 transition hover:underline"
         >
           Разместить рекламу

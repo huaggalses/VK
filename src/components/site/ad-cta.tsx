@@ -15,7 +15,9 @@ export function AdCta() {
             в ВК — напишите, подберём формат под вашу задачу.
           </p>
           <a
-            href="mailto:adv@nashgorod.ru"
+            href="https://vk.me/online_tyumen72"
+            target="_blank"
+            rel="noopener noreferrer"
             className="mt-3 inline-flex h-9 items-center rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 text-[13px] font-semibold text-white shadow transition hover:opacity-90"
           >
             Разместить рекламу
