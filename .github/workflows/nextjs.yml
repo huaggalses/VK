@@ -16,7 +16,7 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true   # новый запуск отменяет заснувший — цепочка не копится
 
 jobs:
   build:
@@ -65,3 +65,34 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # Полная автоматика: сайт сам себя будит. Каждый цикл после выкладки
+  # ждёт паузу и запускает следующий цикл через API — по кругу 24/7.
+  # Расписание (schedule) и ваши посты остаются страховкой и ускорением.
+  keepalive:
+    name: Будильник следующего цикла
+    needs: [build, deploy]
+    if: ${{ !cancelled() }}   # идёт даже при сбое сборки; не идёт только при отмене
+    runs-on: ubuntu-latest
+    steps:
+      - name: Пауза до следующего обновления (12 минут)
+        run: sleep 720
+
+      - name: Запланировать следующий цикл
+        env:
+          LOOP_TOKEN: ${{ secrets.LOOP_PAT }}
+        run: |
+          for i in 1 2 3; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: token $LOOP_TOKEN" \
+              https://api.github.com/repos/huaggalses/VK/actions/workflows/nextjs.yml/dispatches \
+              -d '{"ref":"main"}')
+            if [ "$code" = "204" ]; then
+              echo "✓ следующий цикл запланирован — лента обновится через ~15 минут"
+              exit 0
+            fi
+            echo "попытка $i → HTTP $code, повтор через 30 секунд"
+            sleep 30
+          done
+          echo "⚠ не удалось запланировать следующий цикл — подстрахует расписание"
