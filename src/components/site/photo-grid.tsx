@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { withBase } from "@/lib/base-path";
@@ -45,9 +46,87 @@ export function PhotoGrid({ photos, postId }: { photos: string[]; postId: number
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, photos.length]);
 
-  if (photos.length === 0) return null;
-
   const single = photos.length === 1;
+
+  // Лайтбокс рендерим через портал в <body>: у карточек есть анимация
+  // и transform — они делают position: fixed «привязанным» к карточке,
+  // поэтому просмотр должен жить вне карточки, поверх всего документа.
+  const overlay = isOpen ? (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Просмотр фотографии"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-3 sm:p-8"
+      onClick={close}
+      onTouchStart={(e) => {
+        touchX.current = e.touches[0].clientX;
+      }}
+      onTouchEnd={(e) => {
+        if (touchX.current === null || open === null) return;
+        const dx = e.changedTouches[0].clientX - touchX.current;
+        touchX.current = null;
+        if (Math.abs(dx) < 50) return;
+        if (dx < 0) next();
+        else prev();
+      }}
+    >
+      {/* Крестик — закрыть */}
+      <button
+        type="button"
+        onClick={close}
+        aria-label="Закрыть просмотр"
+        className="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition hover:bg-white/25"
+      >
+        <X className="h-6 w-6" />
+      </button>
+
+      {/* Стрелка — предыдущее фото */}
+      {open > 0 && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            prev();
+          }}
+          aria-label="Предыдущее фото"
+          className="absolute left-2 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition hover:bg-white/25 sm:left-4 sm:h-12 sm:w-12"
+        >
+          <ChevronLeft className="h-7 w-7" />
+        </button>
+      )}
+
+      {/* Само фото — подгоняется под любой экран */}
+      <img
+        src={withBase(photos[open])}
+        alt={`Фото ${open + 1} к посту ${postId}`}
+        draggable={false}
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-[88vh] max-w-full select-none rounded-lg object-contain shadow-2xl"
+      />
+
+      {/* Стрелка — следующее фото */}
+      {open < photos.length - 1 && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            next();
+          }}
+          aria-label="Следующее фото"
+          className="absolute right-2 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition hover:bg-white/25 sm:right-4 sm:h-12 sm:w-12"
+        >
+          <ChevronRight className="h-7 w-7" />
+        </button>
+      )}
+
+      {/* Счётчик фото */}
+      {photos.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-white backdrop-blur">
+          {open + 1} / {photos.length}
+        </div>
+      )}
+    </div>
+  ) : null;
 
   return (
     <>
@@ -84,82 +163,9 @@ export function PhotoGrid({ photos, postId }: { photos: string[]; postId: number
         ))}
       </div>
 
-      {isOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Просмотр фотографии"
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-3 sm:p-8"
-          onClick={close}
-          onTouchStart={(e) => {
-            touchX.current = e.touches[0].clientX;
-          }}
-          onTouchEnd={(e) => {
-            if (touchX.current === null || open === null) return;
-            const dx = e.changedTouches[0].clientX - touchX.current;
-            touchX.current = null;
-            if (Math.abs(dx) < 50) return;
-            if (dx < 0) next();
-            else prev();
-          }}
-        >
-          {/* Крестик — закрыть */}
-          <button
-            type="button"
-            onClick={close}
-            aria-label="Закрыть просмотр"
-            className="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition hover:bg-white/25"
-          >
-            <X className="h-6 w-6" />
-          </button>
-
-          {/* Стрелка — предыдущее фото */}
-          {open > 0 && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                prev();
-              }}
-              aria-label="Предыдущее фото"
-              className="absolute left-2 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition hover:bg-white/25 sm:left-4 sm:h-12 sm:w-12"
-            >
-              <ChevronLeft className="h-7 w-7" />
-            </button>
-          )}
-
-          {/* Само фото — подгоняется под любой экран */}
-          <img
-            src={withBase(photos[open])}
-            alt={`Фото ${open + 1} к посту ${postId}`}
-            draggable={false}
-            onClick={(e) => e.stopPropagation()}
-            className="max-h-[88vh] max-w-full select-none rounded-lg object-contain shadow-2xl"
-          />
-
-          {/* Стрелка — следующее фото */}
-          {open < photos.length - 1 && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                next();
-              }}
-              aria-label="Следующее фото"
-              className="absolute right-2 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition hover:bg-white/25 sm:right-4 sm:h-12 sm:w-12"
-            >
-              <ChevronRight className="h-7 w-7" />
-            </button>
-          )}
-
-          {/* Счётчик фото */}
-          {photos.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-white backdrop-blur">
-              {open + 1} / {photos.length}
-            </div>
-          )}
-        </div>
-      )}
+      {overlay && typeof document !== "undefined"
+        ? createPortal(overlay, document.body)
+        : overlay}
     </>
   );
 }
