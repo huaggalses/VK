@@ -73,9 +73,19 @@ const bestPhoto = (sizes) => {
   return sizes?.filter((s) => s.url).sort((a, b) => (b.width || 0) - (a.width || 0))[0]?.url ?? null;
 };
 
-/** Превью видео: берём самую крупную доступную картинку. */
-const bestVideoImage = (v) =>
-  v.photo_1280 || v.photo_800 || v.photo_640 || v.photo_320 || v.photo_160 || v.photo_130 || null;
+/**
+ * Превью видео: в новых версиях VK API картинка лежит в массиве image
+ * (набор копий разных размеров), в старых — в полях photo_*. Берём крупнейшую.
+ */
+const bestVideoImage = (v) => {
+  if (Array.isArray(v.image) && v.image.length) {
+    const best = v.image
+      .filter((i) => i?.url)
+      .sort((a, b) => (b.width || 0) - (a.width || 0))[0];
+    if (best) return best.url;
+  }
+  return v.photo_1280 || v.photo_800 || v.photo_640 || v.photo_320 || v.photo_160 || v.photo_130 || null;
+};
 
 const hashtagsOf = (text) => {
   const tags = [...text.matchAll(/#([A-Za-zА-Яа-яЁё0-9_]+)/gu)].map((m) => m[1].toLowerCase());
@@ -263,6 +273,7 @@ async function main() {
         v.accessKey ? `${v.oid}_${v.id}_${v.accessKey}` : `${v.oid}_${v.id}`
       );
       const resp = await api("video.get", { videos: ids.join(","), count: 200 });
+      log(`    video.get: элементов ${resp.items?.length ?? 0}`);
       let fixed = 0;
       for (const item of resp.items ?? []) {
         const v = needCover.get(`${item.owner_id}_${item.id}`);
