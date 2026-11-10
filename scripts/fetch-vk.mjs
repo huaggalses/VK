@@ -73,6 +73,10 @@ const bestPhoto = (sizes) => {
   return sizes?.filter((s) => s.url).sort((a, b) => (b.width || 0) - (a.width || 0))[0]?.url ?? null;
 };
 
+/** Превью видео: берём самую крупную доступную картинку. */
+const bestVideoImage = (v) =>
+  v.photo_800 || v.photo_640 || v.photo_320 || v.photo_160 || null;
+
 const hashtagsOf = (text) => {
   const tags = [...text.matchAll(/#([A-Za-zА-Яа-яЁё0-9_]+)/gu)].map((m) => m[1].toLowerCase());
   return [...new Set(tags)].slice(0, 6);
@@ -86,24 +90,56 @@ const titleOf = (text) => {
 function normalizeWall(items) {
   return items
     .filter((p) => !p.marked_as_ads && typeof p.id === "number" && typeof p.from_id === "number")
-    .map((p) => ({
-      id: p.id,
-      date: new Date(p.date * 1000).toISOString(),
-      text: (p.text ?? "").trim(),
-      photos: (p.attachments ?? [])
-        .filter((a) => a.type === "photo" && a.photo?.sizes)
-        .map((a) => bestPhoto(a.photo.sizes))
-        .filter(Boolean)
-        .slice(0, 10),
-      likes: p.likes?.count ?? 0,
-      reposts: p.reposts?.count ?? 0,
-      comments: p.comments?.count ?? 0,
-      views: p.views?.count ?? 0,
-      hashtags: hashtagsOf(p.text ?? ""),
-      vkUrl: `https://vk.ru/wall${p.owner_id}_${p.id}`,
-      related: [],
-      pinned: Boolean(p.is_pinned),
-    }));
+    .map((p) => {
+      // Видео и аудио из вложений: видео встраивается официальным плеером ВК,
+      // аудио на чужих сайтах ВК не проигрывает — показываем плашку со ссылкой.
+      const videos = [];
+      const audios = [];
+      for (const a of p.attachments ?? []) {
+        if (
+          a.type === "video" &&
+          a.video &&
+          typeof a.video.owner_id === "number" &&
+          typeof a.video.id === "number"
+        ) {
+          videos.push({
+            oid: a.video.owner_id,
+            id: a.video.id,
+            accessKey: a.video.access_key ?? null,
+            title: (a.video.title ?? "").trim(),
+            duration: a.video.duration ?? 0,
+            image: bestVideoImage(a.video),
+          });
+        } else if (a.type === "audio" && a.audio) {
+          audios.push({
+            artist: (a.audio.artist ?? "").trim(),
+            title: (a.audio.title ?? "").trim(),
+            duration: a.audio.duration ?? 0,
+          });
+        }
+      }
+
+      return {
+        id: p.id,
+        date: new Date(p.date * 1000).toISOString(),
+        text: (p.text ?? "").trim(),
+        photos: (p.attachments ?? [])
+          .filter((a) => a.type === "photo" && a.photo?.sizes)
+          .map((a) => bestPhoto(a.photo.sizes))
+          .filter(Boolean)
+          .slice(0, 10),
+        videos: videos.slice(0, 5),
+        audio: audios.slice(0, 5),
+        likes: p.likes?.count ?? 0,
+        reposts: p.reposts?.count ?? 0,
+        comments: p.comments?.count ?? 0,
+        views: p.views?.count ?? 0,
+        hashtags: hashtagsOf(p.text ?? ""),
+        vkUrl: `https://vk.ru/wall${p.owner_id}_${p.id}`,
+        related: [],
+        pinned: Boolean(p.is_pinned),
+      };
+    });
 }
 
 function chunkAndWrite(posts) {

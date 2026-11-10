@@ -1,6 +1,8 @@
 import { Heart, MessageCircle, Repeat2, Eye, ExternalLink, Pin } from "lucide-react";
 import { LogoTile } from "./logo";
 import { PhotoGrid } from "./photo-grid";
+import { VideoPlayer } from "./video-player";
+import { AudioList } from "./audio-list";
 import { compact, relativeDate, absoluteDate } from "@/lib/format";
 import type { Post } from "@/lib/types";
 
@@ -40,6 +42,15 @@ export function PostCard({ post, groupName }: { post: Post; groupName: string })
       </div>
 
       <PhotoGrid photos={post.photos} postId={post.id} />
+
+      {/* Видео: официальный плеер ВК, играющий прямо на сайте */}
+      {(post.videos?.length ?? 0) > 0 &&
+        post.videos!.map((v, i) => (
+          <VideoPlayer key={`${v.oid}_${v.id}_${i}`} video={v} postId={post.id} />
+        ))}
+
+      {/* Аудио: плашка со ссылкой — ВК не разрешает внешнее воспроизведение */}
+      <AudioList audio={post.audio} vkUrl={post.vkUrl} />
 
       {post.text && (
         <p className="whitespace-pre-line px-4 py-3 text-[15px] leading-relaxed">
