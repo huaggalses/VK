@@ -75,7 +75,7 @@ const bestPhoto = (sizes) => {
 
 /** Превью видео: берём самую крупную доступную картинку. */
 const bestVideoImage = (v) =>
-  v.photo_800 || v.photo_640 || v.photo_320 || v.photo_160 || null;
+  v.photo_1280 || v.photo_800 || v.photo_640 || v.photo_320 || v.photo_160 || v.photo_130 || null;
 
 const hashtagsOf = (text) => {
   const tags = [...text.matchAll(/#([A-Za-zА-Яа-яЁё0-9_]+)/gu)].map((m) => m[1].toLowerCase());
@@ -247,6 +247,36 @@ async function main() {
   const posts = normalizeWall(wall.items);
   log(`  ✓ получено постов: ${posts.length} (всего на стене: ${wall.count})`);
   if (posts.length === 0) throw new Error("wall.get вернул 0 постов — проверьте группу");
+
+  // ── Шаг 2.5: превью для видео, у которых ВК не дал картинку в wall.get ──
+  // Чужие/репостнутые ролики приходят без photo_* — добираем их через video.get:
+  // иначе на сайте вместо превью-картинки (как в ВК) будет серый блок.
+  const needCover = new Map(); // «oid_id» → объект видео
+  for (const post of posts) {
+    for (const v of post.videos ?? []) {
+      if (!v.image) needCover.set(`${v.oid}_${v.id}`, v);
+    }
+  }
+  if (needCover.size > 0) {
+    try {
+      const ids = [...needCover.values()].map((v) =>
+        v.accessKey ? `${v.oid}_${v.id}_${v.accessKey}` : `${v.oid}_${v.id}`
+      );
+      const resp = await api("video.get", { videos: ids.join(","), count: 200 });
+      let fixed = 0;
+      for (const item of resp.items ?? []) {
+        const v = needCover.get(`${item.owner_id}_${item.id}`);
+        const cover = bestVideoImage(item);
+        if (v && cover) {
+          v.image = cover;
+          fixed++;
+        }
+      }
+      log(`  ✓ превью видео: добрано ${fixed} из ${needCover.size} через video.get`);
+    } catch (e) {
+      log(`  ⚠️ не удалось добрать превью видео (${e.message}) — без картинок`);
+    }
+  }
 
   chunkAndWrite(posts);
   buildTop(posts);

@@ -10,8 +10,10 @@ const fmt = (s: number) =>
   `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
 /**
- * Видео из поста ВК: до клика — превью-кадр с кнопкой ▶ (лента не грузит
+ * Видео из поста ВК: в ленте — превью-картинка с кнопкой ▶ (лента не грузит
  * лишний JS), по клику — официальный плеер ВК в iframe.
+ * Как в ВК: плеер открывается на превью-кадре, воспроизведение запускает
+ * пользователь кнопкой плеера (без внезапного звука).
  * Обёртка aspect-video адаптирует плеер под любую ширину карточки.
  */
 export function VideoPlayer({ video, postId }: { video: PostVideo; postId: number }) {
@@ -19,7 +21,7 @@ export function VideoPlayer({ video, postId }: { video: PostVideo; postId: numbe
 
   const src =
     `https://vk.com/video_ext.php?oid=${video.oid}&id=${video.id}` +
-    `${video.accessKey ? `&access_key=${video.accessKey}` : ""}&hd=2&autoplay=1`;
+    `${video.accessKey ? `&access_key=${video.accessKey}` : ""}&hd=2`;
 
   return (
     <div className="px-4 pb-4">
