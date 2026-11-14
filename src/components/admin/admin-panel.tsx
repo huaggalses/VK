@@ -574,6 +574,40 @@ export function AdminPanel() {
     }
   }
 
+  /** Снять рекламу со слота: пишем null в promo.json / recommend.json —
+   *  после пересборки на этом месте появится типовая карточка. */
+  async function handleRemoveSlot() {
+    if (slot === "pinned") return;
+    if (!token.trim()) {
+      setConn({ ok: false, msg: "Добавьте личный токен GitHub (PAT) — без него не опубликовать." });
+      return;
+    }
+    setPublishing(true);
+    setLog([]);
+    try {
+      addLog({ kind: "info", text: `Проверяю доступ к ${ghCfg.owner}/${ghCfg.repo}…` });
+      const ping = await checkConnection(ghCfg, token.trim());
+      if (!ping.ok) throw new Error(ping.error);
+      const label = slot === "promo" ? "Промо-блок" : "Рекомендуем";
+      addLog({ kind: "info", text: `Снимаю рекламу: public/data/${slot}.json → null…` });
+      const res = await putFile(
+        ghCfg,
+        token.trim(),
+        `public/data/${slot}.json`,
+        utf8ToBase64("null\n"),
+        `promo: снята реклама слота «${label}» — на сайте появится типовая карточка`,
+        ghCfg.branch,
+      );
+      if (!res.ok) throw new Error(res.error);
+      addLog({ kind: "ok", text: `Слот «${label}» снят — на его месте появится типовая карточка.`, link: res.commitUrl });
+      addLog({ kind: "info", text: "GitHub Actions пересоберёт сайт за 1–3 минуты — обновите страницу." });
+    } catch (e) {
+      addLog({ kind: "err", text: e instanceof Error ? e.message : "Неизвестная ошибка." });
+    } finally {
+      setPublishing(false);
+    }
+  }
+
   // ── UI ─────────────────────────────────────────────────────────────────
   if (gate === "loading") {
     return (
@@ -986,6 +1020,13 @@ export function AdminPanel() {
                   {publishing ? <Loader2 className="size-4 animate-spin" /> : <Rocket className="size-4" />}
                   {publishing ? "Публикую…" : slot === "pinned" ? "Закрепить пост" : "Опубликовать рекламный пост"}
                 </Button>
+
+                {slot !== "pinned" && (
+                  <Button variant="outline" className="w-full" onClick={() => void handleRemoveSlot()} disabled={publishing}>
+                    {publishing ? <Loader2 className="size-4 animate-spin" /> : <X className="size-4" />}
+                    Снять рекламу — вернуть типовую карточку
+                  </Button>
+                )}
 
                 <div>
                   <p className="mb-2 text-center text-xs text-muted-foreground">или вручную, без токена</p>

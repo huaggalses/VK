@@ -28,7 +28,11 @@ export default function Home() {
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-14 pt-5 sm:px-6">
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_336px]">
           <div className="min-w-0 space-y-5">
-            <PromoCard promo={promo} />
+            <PromoCard
+              promo={promo}
+              members={group.members}
+              adUrl={`https://vk.ru/gim${group.id}`}
+            />
             {pinned && <PostCard post={pinned} groupName={group.name} />}
             <InfiniteFeed
               first={first}
@@ -42,7 +46,7 @@ export default function Home() {
               }
               recSlot={
                 <div key="rec-slot" className="lg:hidden">
-                  <RecommendCard rec={rec} />
+                  <RecommendCard rec={rec} groupUrl={group.url} members={group.members} />
                 </div>
               }
             />
@@ -55,7 +59,7 @@ export default function Home() {
               без sticky — иначе нижние карточки не добраться до низа */}
           <aside className="hidden space-y-5 lg:block">
             <TopWeek period={top.period} items={top.items} />
-            <RecommendCard rec={rec} />
+            <RecommendCard rec={rec} groupUrl={group.url} members={group.members} />
             <AdCta />
           </aside>
         </div>
